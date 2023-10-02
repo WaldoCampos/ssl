@@ -14,7 +14,7 @@ import tensorflow_datasets as tfds
 import improc.augmentation as aug
 import configparser
 import models.sketch_simsiam as simsiam  
-import tfds_qd.tfds_qd
+# import tfds_qd.tfds_qd
 import numpy as np
 
 
@@ -39,13 +39,13 @@ def mnist_map_func(image, daug_func):
         
 #---------------------------------------------------------------------------------------
 VISUALIZE = False # if false, it runs training
-if ip=='127.0.1.1' :
-    VISUALIZE = True
+# if ip=='127.0.1.1' :
+#     VISUALIZE = True
     
 AUTO = tf.data.AUTOTUNE
 #load configuracion file
 config = configparser.ConfigParser()
-config.read('config/qd.ini')
+config.read('/home/wcampos/tests/ssl/config/qd.ini')
 config_model = config['SIMSIAM']
 config_data = config['DATA']
 daug = aug.DataAugmentation(config_data)

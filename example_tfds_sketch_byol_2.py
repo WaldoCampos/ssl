@@ -25,7 +25,7 @@ def visualize_data(ds_1, ds_2) :
         sample_images_one = next(iter(ds_1))
         sample_images_two = next(iter(ds_2))
         print(sample_images_one.shape)
-        for i in range(15):        
+        for i in range(15):
             ax[i % 5][(i // 5)*2].imshow(sample_images_one[i].numpy().astype("int"))
             
             ax[i % 5][((i) // 5)*2 + 1].imshow(sample_images_two[i].numpy().astype("int"))
@@ -104,9 +104,8 @@ else :
     simsiam_model = byol.SketchBYOL(config_data, config_model)
     simsiam_model.compile(optimizer=tf.keras.optimizers.SGD(lr_decayed_fn, momentum=0.9))
     history = simsiam_model.fit_byol(ssl_ds, 
-                          epochs=config_model.getint('EPOCHS'),
-                          ckp_dir=config_model.get('CKP_FILE'))
-      
+                        epochs=config_model.getint('EPOCHS'),
+                        ckp_dir=config_model.get('CKP_FILE'))
     #predicting
       
       

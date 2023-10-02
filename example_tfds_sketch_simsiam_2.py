@@ -13,7 +13,7 @@ import tensorflow as tf
 # import tensorflow_datasets as tfds
 import improc.augmentation as aug
 import configparser
-import models.sketch_byol as byol  
+import models.sketch_simsiam as simsiam  
 # import tfds_qd.tfds_qd
 import numpy as np
 import pickle
@@ -47,11 +47,11 @@ AUTO = tf.data.AUTOTUNE
 #load configuracion file
 config = configparser.ConfigParser()
 config.read('/home/wcampos/tests/ssl/config/qd.ini')
-config_model = config['BYOL']
+config_model = config['SIMSIAM']
 config_data = config['DATA']
 daug = aug.DataAugmentation(config_data)
  
-# #loading dataset example cifar
+#loading dataset example cifar
 # ds = tfds.load('tfds_qd')
 # ds_train = ds['train']
 # ssl_ds_one = ds_train
@@ -100,12 +100,11 @@ else :
     )
       
     # Compile model and start training.
-    
-    simsiam_model = byol.SketchBYOL(config_data, config_model)
+    simsiam_model = simsiam.SketchSimSiam(config_data, config_model)
     simsiam_model.compile(optimizer=tf.keras.optimizers.SGD(lr_decayed_fn, momentum=0.9))
-    history = simsiam_model.fit_byol(ssl_ds, 
-                          epochs=config_model.getint('EPOCHS'),
-                          ckp_dir=config_model.get('CKP_FILE'))
+    history = simsiam_model.fit(ssl_ds, 
+                          epochs=config_model.getint('EPOCHS'), 
+                          callbacks=[early_stopping])
       
     #predicting
       
@@ -116,9 +115,10 @@ else :
       
     #saving model
     # print('saving model')
-    model_file = config_model.get('CKP_FILE')
+    model_file =config_model.get('CKP_FILE')
     if not os.path.exists(os.path.dirname(model_file)) :
         os.makedirs(os.path.dirname(model_file))
         print('--- {} was created'.format(os.path.dirname(model_file)))
     simsiam_model.save_weights(model_file)
     print("model saved to {}".format(model_file))        
+    #

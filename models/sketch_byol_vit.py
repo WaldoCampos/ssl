@@ -1,5 +1,6 @@
 #import models.resnet as resnet
 import models.resnet as resnet
+from models.vit_backbone import VitBackbone
 import tensorflow as tf
 import configparser
 import os
@@ -33,18 +34,12 @@ class SketchBYOL(tf.keras.Model):
         inputs = tf.keras.layers.Input((self.CROP_SIZE, self.CROP_SIZE, self.CHANNELS))                
         x = inputs / 127.5 - 1
         #bkbone = resnet.ResNetBackbone([2,2], [64,128])
-        #This is a ResNet-34
+        # #This is a ResNet-34
         # bkbone = resnet.ResNetBackbone([3,4,6,3], [64,128, 256, 512], kernel_regularizer = tf.keras.regularizers.l2(self.WEIGHT_DECAY))
-        bkbone = resnet.ResNet([3,4,6,3], [64,128, 256, 512], 1000, True)
-        # Load the pre-trained weights
-        pretrain_epoch = 69
-        bkbone.build(input_shape=(1, 224, 224, 3))
-        bkbone.load_weights(f'/home/wcampos/tests/ssl/saved_models/imagenet1k/resnet50/model_weights_epoch{pretrain_epoch}.h5')
-        bkbone = bkbone.layers[-3]
         #bkbone = simple.Backbone()
-        x = bkbone(x)
-        x = tf.keras.layers.GlobalAveragePooling2D()(x)
-        print(f"SHAPE DE SALIDA DEL BACKBONE -> {tf.shape(x)}")
+        # Visual Transformer backbone
+        bkbone = VitBackbone(image_size=224, patch_size=16, projection_dim=64, transformer_layers=1, transformer_units=[256, 64])
+        x = bkbone(x)   
         # Projection head.
         x = tf.keras.layers.Dense(
             self.PROJECT_DIM, 

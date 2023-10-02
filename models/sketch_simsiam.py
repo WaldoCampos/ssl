@@ -24,9 +24,16 @@ class SketchSimSiam(tf.keras.Model):
         inputs = tf.keras.layers.Input((self.CROP_SIZE, self.CROP_SIZE, self.CHANNELS))                
         x = inputs / 127.5 - 1
         #the backbone can be an input to the clas SimSiam
-        bkbone = resnet.ResNetBackbone([3,4,6,3], [64,128, 256, 512], kernel_regularizer = tf.keras.regularizers.l2(self.WEIGHT_DECAY))
+        # bkbone = resnet.ResNetBackbone([3,4,6,3], [64,128, 256, 512], kernel_regularizer = tf.keras.regularizers.l2(self.WEIGHT_DECAY))
+        bkbone = resnet.ResNet([3,4,6,3], [64,128, 256, 512], 1000, True)
+        # Load the pre-trained weights
+        pretrain_epoch = 100
+        bkbone.build(input_shape=(1, 224, 224, 3))
+        bkbone.load_weights(f'/home/wcampos/tests/ssl/saved_models/imagenet1k/resnet50/model_weights_epoch{pretrain_epoch}.h5')
+        bkbone = bkbone.layers[-3]
         #bkbone = simple.Backbone()
-        x = bkbone(x)   
+        x = bkbone(x)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
         # Projection head.
         x = tf.keras.layers.Dense(
             self.PROJECT_DIM, 
@@ -35,14 +42,14 @@ class SketchSimSiam(tf.keras.Model):
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Flatten()(x)        
+        x = tf.keras.layers.Flatten()(x)
         x = tf.keras.layers.Dense(
-            self.PROJECT_DIM, 
-            use_bias=False, 
+            self.PROJECT_DIM,
+            use_bias=False,
             kernel_regularizer=tf.keras.regularizers.l2(self.WEIGHT_DECAY)
         )(x)
         outputs = tf.keras.layers.BatchNormalization()(x)
-        
+
         return tf.keras.Model(inputs, outputs, name="encoder")
 
 
